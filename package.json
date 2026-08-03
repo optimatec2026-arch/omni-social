@@ -9,7 +9,6 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Garante que a pasta de uploads e o banco existam
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
@@ -19,7 +18,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Configuração robusta do Multer para armazenamento de mídias corporativas
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => {
@@ -27,16 +25,15 @@ const storage = multer.diskStorage({
         cb(null, uniqueSuffix + path.extname(file.originalname));
     }
 });
+
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 25 * 1024 * 1024 } // Limite seguro de 25MB por arquivo
+    limits: { fileSize: 25 * 1024 * 1024 }
 });
 
-// Credenciais Corporativas Protegidas
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'optimatec2026';
 
-// Inicialização segura do Banco de Dados SQLite com modo estrito
 const dbPath = path.join(__dirname, 'database.sqlite');
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
@@ -54,9 +51,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
     }
 });
 
-// ==========================================
-// ROTA DE LOGIN CORPORATIVO BLINDADA
-// ==========================================
 app.get('/login', (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -116,9 +110,6 @@ function verificarAuth(req, res, next) {
     res.redirect('/login');
 }
 
-// ==========================================
-// PAINEL DE CONTROLE CORPORATIVO DE ALTA PERFORMANCE
-// ==========================================
 app.get('/', verificarAuth, (req, res) => {
     db.all(`SELECT * FROM disparos ORDER BY id DESC LIMIT 10`, [], (err, rows) => {
         if (err) rows = [];
@@ -169,12 +160,10 @@ app.get('/', verificarAuth, (req, res) => {
 
                 <div class="container pb-5">
                     <div class="row g-4">
-                        <!-- Formulário de Disparos e Anexos -->
                         <div class="col-lg-6">
                             <div class="card card-corporate p-4 h-100">
                                 <h5 class="fw-bold text-white mb-3"><i class="fa-solid fa-paper-plane text-primary me-2"></i> Central de Campanhas em Lote</h5>
                                 <form id="formDisparo" action="/enviar" method="POST" enctype="multipart/form-data">
-                                    
                                     <div class="mb-3">
                                         <label class="form-label small text-muted fw-semibold">CANAL DE DESTINO</label>
                                         <select class="form-select" name="rede" required>
@@ -219,7 +208,6 @@ app.get('/', verificarAuth, (req, res) => {
                             </div>
                         </div>
 
-                        <!-- Auditoria e Histórico Avançado -->
                         <div class="col-lg-6">
                             <div class="card card-corporate p-4 h-100">
                                 <h5 class="fw-bold text-white mb-3"><i class="fa-solid fa-shield-heart text-info me-2"></i> Auditoria de Logs Recentes</h5>
@@ -258,9 +246,6 @@ app.get('/', verificarAuth, (req, res) => {
     });
 });
 
-// ==========================================
-// PROCESSAMENTO DE LOTE BLINDADO
-// ==========================================
 app.post('/enviar', verificarAuth, upload.single('arquivo'), (req, res) => {
     try {
         const { rede, telefones, mensagem } = req.body;
