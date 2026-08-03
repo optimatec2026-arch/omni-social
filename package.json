@@ -38,7 +38,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 // ==========================================
-// ROTA DE LOGIN
+// ROTA DE LOGIN CORPORATIVO
 // ==========================================
 app.get('/login', (req, res) => {
     res.send(`
@@ -46,23 +46,31 @@ app.get('/login', (req, res) => {
         <html lang="pt-BR">
         <head>
             <meta charset="UTF-8">
-            <title>Login - Optima Tec</title>
+            <title>Login - Optima Tec Enterprise</title>
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-            <style>body { background-color: #0A192F; color: #ffffff; }</style>
+            <style>
+                body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; }
+                .card-login { background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; }
+                .btn-corporate { background-color: #2563eb; color: #ffffff; font-weight: 600; }
+                .btn-corporate:hover { background-color: #1d4ed8; color: #ffffff; }
+            </style>
         </head>
-        <body class="d-flex align-items-center py-4 bg-dark" style="height: 100vh;">
-            <div class="container text-center" style="max-width: 400px;">
-                <form action="/login" method="POST" class="card bg-secondary p-4 shadow-lg border-0 text-start">
-                    <h3 class="text-white text-center mb-3">Optima Tec Omni-Social</h3>
-                    <div class="mb-3">
-                        <label class="form-label text-white">Usuário</label>
-                        <input type="text" class="form-control" name="usuario" required>
+        <body class="d-flex align-items-center py-4" style="height: 100vh;">
+            <div class="container text-center" style="max-width: 420px;">
+                <form action="/login" method="POST" class="card card-login p-4 shadow-lg text-start">
+                    <div class="text-center mb-4">
+                        <h4 class="fw-bold text-white m-0">OPTIMA TEC</h4>
+                        <span class="text-muted small">Enterprise Omni-Social Suite</span>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label text-white">Senha</label>
-                        <input type="password" class="form-control" name="senha" required>
+                        <label class="form-label text-sm text-slate-300">Usuário Corporativo</label>
+                        <input type="text" class="form-control bg-dark text-white border-secondary" name="usuario" required>
                     </div>
-                    <button type="submit" class="btn btn-info w-100 fw-bold">Entrar</button>
+                    <div class="mb-3">
+                        <label class="form-label text-sm text-slate-300">Senha de Acesso</label>
+                        <input type="password" class="form-control bg-dark text-white border-secondary" name="senha" required>
+                    </div>
+                    <button type="submit" class="btn btn-corporate w-100 py-2 mt-2">Autenticar Sistema</button>
                 </form>
             </div>
         </body>
@@ -76,7 +84,7 @@ app.post('/login', (req, res) => {
         res.cookie('auth', 'true', { httpOnly: true });
         return res.redirect('/');
     }
-    res.send(`<script>alert('Usuário ou senha incorretos!'); window.location.href='/login';</script>`);
+    res.send(`<script>alert('Credenciais corporativas inválidas!'); window.location.href='/login';</script>`);
 });
 
 function verificarAuth(req, res, next) {
@@ -87,15 +95,22 @@ function verificarAuth(req, res, next) {
 }
 
 // ==========================================
-// PAINEL PRINCIPAL (Todas as Redes e Mídias)
+// PAINEL PRINCIPAL (Padrão Multinacional / Corporativo)
 // ==========================================
 app.get('/', verificarAuth, (req, res) => {
     db.all(`SELECT * FROM disparos ORDER BY id DESC LIMIT 5`, [], (err, rows) => {
         if (err) rows = [];
 
         const historicoHtml = rows.length === 0 
-            ? '<span class="text-muted">Nenhum envio recente.</span>' 
-            : rows.map(l => `<div>[${l.hora}] (${l.rede}) Para: ${l.destino} - Mídia: ${l.midia ? l.midia : 'Texto/Post'}</div>`).join('');
+            ? '<tr><td colspan="4" class="text-muted text-center py-3">Nenhum registro de atividade recente.</td></tr>' 
+            : rows.map(l => `
+                <tr>
+                    <td class="text-info fw-semibold">${l.rede}</td>
+                    <td>${l.destino}</td>
+                    <td>${l.midia ? '<span class="badge bg-secondary">Sim (' + l.midia + ')</span>' : '<span class="text-muted">Apenas Texto</span>'}</td>
+                    <td class="text-muted small">${l.hora}</td>
+                </tr>
+            `).join('');
 
         res.send(`
             <!DOCTYPE html>
@@ -103,86 +118,107 @@ app.get('/', verificarAuth, (req, res) => {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Optima Tec - Central Omni-Social Completa</title>
+                <title>Optima Tec - Enterprise Omni-Social</title>
                 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
                 <style>
-                    body { background-color: #0A192F; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-                    .card-custom { background-color: #112240; border: 1px solid #233554; border-radius: 10px; }
-                    .btn-custom { background-color: #00bcd4; color: #0A192F; font-weight: bold; }
-                    .btn-custom:hover { background-color: #00acc1; color: #ffffff; }
+                    body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; }
+                    .navbar-corporate { background-color: #1e293b; border-bottom: 1px solid #334155; }
+                    .card-corporate { background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; }
+                    .btn-corporate { background-color: #2563eb; color: #ffffff; font-weight: 600; }
+                    .btn-corporate:hover { background-color: #1d4ed8; color: #ffffff; }
+                    .table-dark-custom { background-color: #111827; color: #e2e8f0; }
+                    .form-control, .form-select { background-color: #0f172a !important; color: #ffffff !important; border-color: #334155 !important; }
+                    .form-control:focus, .form-select:focus { border-color: #2563eb !important; box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25); }
                 </style>
             </head>
-            <body class="py-5">
-                <div class="container">
-                    <div class="row justify-content-center">
-                        <div class="col-md-8 text-center mb-4">
-                            <h1 class="fw-bold text-info">OPTIMA TEC OMNI-SOCIAL</h1>
-                            <p class="text-muted">Gerenciador Unificado de Mensagens, Vídeos e Redes Sociais</p>
-                            <a href="/login" class="text-danger small text-decoration-none">Sair da Conta</a>
+            <body>
+                <!-- Barra Superior Corporativa -->
+                <nav class="navbar navbar-corporate px-4 py-3 mb-4">
+                    <div class="container-fluid">
+                        <span class="navbar-brand mb-0 h1 text-white fw-bold">
+                            <i class="fa-solid fa-network-wired text-primary me-2"></i> OPTIMA TEC <span class="text-muted fs-6 fw-normal">| Enterprise Suite</span>
+                        </span>
+                        <div>
+                            <span class="text-success small me-3"><i class="fa-solid fa-circle fa-2xs me-1"></i> Servidor Online</span>
+                            <a href="/login" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-arrow-right-from-bracket me-1"></i> Encerrar Sessão</a>
                         </div>
                     </div>
+                </nav>
 
-                    <div class="row justify-content-center">
-                        <!-- Formulário de Automação e Postagem -->
-                        <div class="col-md-7 mb-4">
-                            <div class="card card-custom p-4 shadow-lg">
-                                <h3 class="h5 mb-3 text-white">🚀 Nova Campanha / Publicação</h3>
+                <div class="container pb-5">
+                    <div class="row g-4">
+                        <!-- Formulário de Operação (Lado Esquerdo) -->
+                        <div class="col-lg-6">
+                            <div class="card card-corporate p-4 shadow-sm h-100">
+                                <h5 class="fw-bold text-white mb-3"><i class="fa-solid fa-paper-plane text-primary me-2"></i> Central de Campanhas e Disparos</h5>
                                 <form id="formDisparo" action="/enviar" method="POST" enctype="multipart/form-data">
                                     
-                                    <div class="mb-3 text-start">
-                                        <label class="form-label text-sm text-light">Selecione o Canal ou Rede Social</label>
-                                        <select class="form-select bg-dark text-white border-secondary" name="rede">
-                                            <optgroup label="💬 Mensagens e Disparos Diretos (Inbox)">
+                                    <div class="mb-3">
+                                        <label class="form-label small text-muted fw-semibold">CANAL / REDE SOCIAL DE DESTINO</label>
+                                        <select class="form-select" name="rede">
+                                            <optgroup label="💬 Mensagens Diretas (Inbox)">
                                                 <option value="WhatsApp">WhatsApp</option>
                                                 <option value="Telegram">Telegram</option>
                                                 <option value="Facebook Messenger">Facebook Messenger</option>
                                                 <option value="Instagram Direct">Instagram Direct</option>
                                             </optgroup>
-                                            <optgroup label="🎬 Vídeos e Conteúdo (Feed / Reels / Shorts)">
+                                            <optgroup label="🎬 Mídias e Vídeos (Feed / Reels / Shorts)">
                                                 <option value="TikTok">TikTok (Publicar Vídeo)</option>
                                                 <option value="Kwai">Kwai (Publicar Vídeo)</option>
                                                 <option value="YouTube Shorts">YouTube Shorts / Vídeo</option>
                                             </optgroup>
-                                            <optgroup label="✍️ Redes de Texto e Comunidade">
+                                            <optgroup label="✍️ Redes de Texto & Comunidade">
                                                 <option value="X (Twitter)">X / Twitter (Post)</option>
                                                 <option value="LinkedIn">LinkedIn (Post Profissional)</option>
                                             </optgroup>
                                         </select>
                                     </div>
 
-                                    <div class="mb-3 text-start">
-                                        <label class="form-label text-sm text-light">Destinatários / Perfil de Destino (Números ou @perfis)</label>
-                                        <textarea class="form-control bg-dark text-white border-secondary" name="telefones" rows="2" placeholder="5541999999999 ou @perfil" required></textarea>
+                                    <div class="mb-3">
+                                        <label class="form-label small text-muted fw-semibold">DESTINATÁRIOS (Números, Telefones ou @Perfis separados por vírgula ou linha)</label>
+                                        <textarea class="form-control" name="telefones" rows="2" placeholder="5541999999999, @perfil_exemplo" required></textarea>
                                     </div>
 
-                                    <div class="mb-3 text-start">
-                                        <label class="form-label text-sm text-light">Mensagem / Legenda do Post</label>
-                                        <textarea class="form-control bg-dark text-white border-secondary" name="mensagem" rows="3" placeholder="Digite sua mensagem ou legenda..." required></textarea>
+                                    <div class="mb-3">
+                                        <label class="form-label small text-muted fw-semibold">CONTEÚDO DA MENSAGEM / LEGENDA</label>
+                                        <textarea class="form-control" name="mensagem" rows="3" placeholder="Insira o texto corporativo ou legenda..." required></textarea>
                                     </div>
 
-                                    <div class="mb-3 text-start">
-                                        <label class="form-label text-sm text-light">Anexar Mídia (Foto, Vídeo para TikTok/Kwai, ou PDF)</label>
-                                        <input type="file" class="form-control bg-dark text-white border-secondary" name="arquivo">
+                                    <!-- BOTÃO DE ANEXAR ARQUIVOS QUE FALTAVA -->
+                                    <div class="mb-4">
+                                        <label class="form-label small text-muted fw-semibold">ANEXAR MÍDIA (Foto, Vídeo para TikTok/Kwai ou Documento PDF)</label>
+                                        <input type="file" class="form-control" name="arquivo">
+                                        <div class="form-text text-muted small">Formatos suportados: JPG, PNG, MP4, PDF.</div>
                                     </div>
 
-                                    <button type="submit" id="btnEnviar" class="btn btn-custom w-100 py-2">Executar Ação</button>
+                                    <button type="submit" id="btnEnviar" class="btn btn-corporate w-100 py-2">
+                                        <i class="fa-solid fa-bolt me-2"></i> Executar Envio em Lote
+                                    </button>
                                 </form>
                             </div>
                         </div>
 
-                        <!-- Status e Histórico -->
-                        <div class="col-md-5 mb-4">
-                            <div class="card card-custom p-4 shadow-lg h-100">
-                                <h3 class="h5 mb-3 text-white">📊 Histórico Unificado</h3>
-                                <ul class="list-unstyled text-start text-muted small">
-                                    <li class="mb-2">✅ Servidor Online & Seguro</li>
-                                    <li class="mb-2">📁 Suporte a Vídeos e Mídias Ativo</li>
-                                    <li class="mb-2">🌐 Multicanal Expandido</li>
-                                </ul>
-                                <hr class="border-secondary">
-                                <h6 class="text-info">Últimas ações:</h6>
-                                <div class="bg-dark p-2 rounded text-start small overflow-auto" style="max-height: 180px;">
-                                    ${historicoHtml}
+                        <!-- Histórico Corporativo (Lado Direito) -->
+                        <div class="col-lg-6">
+                            <div class="card card-corporate p-4 shadow-sm h-100">
+                                <h5 class="fw-bold text-white mb-3"><i class="fa-solid fa-chart-line text-info me-2"></i> Auditoria de Atividades Recentes</h5>
+                                <p class="text-muted small">Registro em tempo real das ações processadas pelo motor omni-social.</p>
+                                
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-dark table-striped table-hover align-middle small table-dark-custom rounded overflow-hidden">
+                                        <thead>
+                                            <tr>
+                                                <th>Canal</th>
+                                                <th>Destino</th>
+                                                <th>Mídia</th>
+                                                <th>Horário</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${historicoHtml}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -193,7 +229,7 @@ app.get('/', verificarAuth, (req, res) => {
                     document.getElementById('formDisparo').addEventListener('submit', function() {
                         const btn = document.getElementById('btnEnviar');
                         btn.disabled = true;
-                        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processando...';
+                        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processando lote corporativo...';
                     });
                 </script>
             </body>
@@ -203,14 +239,14 @@ app.get('/', verificarAuth, (req, res) => {
 });
 
 // ==========================================
-// PROCESSAMENTO GERAL
+// PROCESSAMENTO DOS DADOS E ARQUIVOS
 // ==========================================
 app.post('/enviar', verificarAuth, upload.single('arquivo'), (req, res) => {
     const { rede, telefones, mensagem } = req.body;
     const arquivoEnviado = req.file ? req.file.originalname : null;
 
     if (!telefones || !mensagem) {
-        return res.send(`<script>alert('Preencha os campos obrigatórios!'); window.location.href='/';</script>`);
+        return res.send(`<script>alert('Preencha todos os campos obrigatórios.'); window.location.href='/';</script>`);
     }
 
     const listaDestinatarios = telefones.split(/[\n,]/).map(t => t.trim()).filter(t => t.length > 0);
@@ -218,20 +254,19 @@ app.post('/enviar', verificarAuth, upload.single('arquivo'), (req, res) => {
 
     try {
         for (let destino of listaDestinatarios) {
-            console.log(`[OMNI-SOCIAL COMPLETO] Rede: ${rede} | Destino: ${destino} | Mídia: ${arquivoEnviado || 'Nenhuma'}`);
+            console.log(`[ENTERPRISE] Canal: ${rede} | Destino: ${destino} | Anexo: ${arquivoEnviado || 'Nenhum'}`);
             
-            // Grava no banco de dados SQLite
             db.run(`INSERT INTO disparos (rede, destino, mensagem, midia, hora) VALUES (?, ?, ?, ?, ?)`, 
                 [rede, destino, mensagem, arquivoEnviado, horaAtual]);
         }
 
-        res.send(`<script>alert('Ação executada com sucesso para ${rede}!'); window.location.href='/';</script>`);
+        res.send(`<script>alert('Lote executado com sucesso na rede ${rede}!'); window.location.href='/';</script>`);
     } catch (error) {
-        console.error('Erro na execução:', error);
-        res.send(`<script>alert('Erro ao processar a solicitação.'); window.location.href='/';</script>`);
+        console.error('Erro no processamento:', error);
+        res.send(`<script>alert('Erro crítico ao processar o lote.'); window.location.href='/';</script>`);
     }
 });
 
 app.listen(PORT, () => {
-    console.log(`Optima Tec Omni-Social Completo rodando na porta ${PORT}`);
+    console.log(`Optima Tec Enterprise rodando na porta ${PORT}`);
 });
