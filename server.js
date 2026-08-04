@@ -83,7 +83,7 @@ app.get('/login', (req, res) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Login - Omni-Social Real</title>
+            <title>Login - Omni-Social Inteligente</title>
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
             <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
             <style>${cleanStyle} body { height: 100vh; display: flex; align-items: center; justify-content: center; }</style>
@@ -92,10 +92,10 @@ app.get('/login', (req, res) => {
             <div class="card card-corporate p-5" style="width: 100%; max-width: 420px;">
                 <div class="text-center mb-4">
                     <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 24px;">
-                        <i class="fa-solid fa-bolt"></i>
+                        <i class="fa-solid fa-brain"></i>
                     </div>
                     <h4 class="fw-bold mt-3 mb-1">Omni-Social</h4>
-                    <span class="text-muted-custom small">Ambiente de Execução Real</span>
+                    <span class="text-muted-custom small">Parser Automático & Disparo Real</span>
                 </div>
                 <form action="/login" method="POST">
                     <div class="mb-3">
@@ -159,7 +159,7 @@ app.get('/', verificarAuth, (req, res) => {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Omni-Social - Painel Real</title>
+                <title>Omni-Social - Parser Automático</title>
                 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
                 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
                 <style>${cleanStyle}</style>
@@ -168,7 +168,7 @@ app.get('/', verificarAuth, (req, res) => {
                 <nav class="navbar navbar-corporate px-4 py-3 mb-4">
                     <div class="container-fluid">
                         <span class="navbar-brand mb-0 h1 fw-bold text-dark d-flex align-items-center">
-                            <i class="fa-solid fa-network-wired text-primary me-2 fs-4"></i> OMNI-SOCIAL <span class="text-muted-custom fs-6 fw-normal ms-2">| Motor de Disparos Reais</span>
+                            <i class="fa-solid fa-brain text-primary me-2 fs-4"></i> OMNI-SOCIAL <span class="text-muted-custom fs-6 fw-normal ms-2">| Parser Inteligente & Fila Contínua</span>
                         </span>
                         <div class="d-flex align-items-center">
                             <button class="btn btn-outline-secondary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#modalConfig"><i class="fa-solid fa-gear me-1"></i> Configurações</button>
@@ -181,45 +181,28 @@ app.get('/', verificarAuth, (req, res) => {
                     <div class="row g-4">
                         <div class="col-lg-5">
                             <div class="card card-corporate p-4 h-100">
-                                <h5 class="fw-bold mb-3"><i class="fa-solid fa-terminal text-primary me-2"></i> Central de Envio Ativo</h5>
-                                <p class="text-muted-custom small">Insira os contatos ou envie documentos/prints reais. O sistema processará e efetuará o direcionamento imediato para as redes escolhidas.</p>
+                                <h5 class="fw-bold mb-3"><i class="fa-solid fa-wand-magic-sparkles text-primary me-2"></i> Parser & Envio Automatizado</h5>
+                                <p class="text-muted-custom small">Cole qualquer texto bagunçado ou anexe um arquivo de log. O sistema faz o <b>parsing inteligente</b>, separa cada contato para a sua rede social ou canal correspondente (WhatsApp, E-mail, Telegram, Instagram) e cria a fila de disparos.</p>
                                 
-                                <form id="formDisparo" action="/disparar-real" method="POST" enctype="multipart/form-data">
+                                <form id="formDisparo" action="/iniciar-parser-fila" method="POST" enctype="multipart/form-data">
                                     <div class="mb-3">
-                                        <label class="form-label">Canal de Destino Oficial</label>
-                                        <select class="form-select" name="rede" required>
-                                            <option value="WhatsApp">WhatsApp</option>
-                                            <option value="YouTube">YouTube</option>
-                                            <option value="Instagram">Instagram</option>
-                                            <option value="Facebook">Facebook</option>
-                                            <option value="TikTok">TikTok</option>
-                                            <option value="Telegram">Telegram</option>
-                                            <option value="LinkedIn">LinkedIn</option>
-                                            <option value="X (Twitter)">X (Twitter)</option>
-                                            <option value="Pinterest">Pinterest</option>
-                                            <option value="Snapchat">Snapchat</option>
-                                            <option value="E-mail Corporativo">E-mail Corporativo</option>
-                                        </select>
+                                        <label class="form-label">Bloco de Dados Brutos (Sujo / Bagunçado)</label>
+                                        <textarea class="form-control" name="textoBruto" id="campoTextoBruto" rows="5" placeholder="Cole aqui o relatório cheio de telefones, e-mails e @perfis misturados..." required></textarea>
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label">Lista de Destinatários (Telefones / E-mails / @Perfis)</label>
-                                        <textarea class="form-control" name="telefones" id="campoTelefones" rows="3" placeholder="Ex: 5541999999999 ou cole os dados extraídos..." required></textarea>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label">Mensagem Oficial da Campanha</label>
-                                        <textarea class="form-control" name="mensagem" rows="3" placeholder="Digite o texto completo..." required></textarea>
+                                        <label class="form-label">Mensagem Padrão da Campanha</label>
+                                        <textarea class="form-control" name="mensagem" rows="3" placeholder="Digite a mensagem que será enviada adaptada a cada rede..." required></textarea>
                                     </div>
 
                                     <div class="mb-4">
-                                        <label class="form-label">Anexar Mídia Real (Foto, Vídeo, Documento, Print)</label>
+                                        <label class="form-label">Anexar Arquivo ou Print de Apoio (Opcional)</label>
                                         <input type="file" class="form-control" name="arquivo" id="inputArquivo">
-                                        <div class="form-text text-muted-custom small mt-1">Arquivos enviados ficam salvos e vinculados ao log do disparo.</div>
+                                        <div class="form-text text-muted-custom small mt-1">Se anexar um arquivo `.txt`, o conteúdo será lido e parseado automaticamente.</div>
                                     </div>
 
                                     <button type="submit" class="btn btn-corporate w-100 py-3">
-                                        <i class="fa-solid fa-paper-plane me-2"></i> Executar Envio Real Agora
+                                        <i class="fa-solid fa-network-wired me-2"></i> Executar Parser e Gerar Fila Multi-Rede
                                     </button>
                                 </form>
                             </div>
@@ -256,7 +239,7 @@ app.get('/', verificarAuth, (req, res) => {
                     </div>
                 </div>
 
-                <!-- MODAL DE CONFIGURAÇÕES -->
+                <!-- MODAL CONFIG -->
                 <div class="modal fade" id="modalConfig" tabindex="-1">
                     <div class="modal-dialog">
                         <div class="modal-content card-corporate">
@@ -283,17 +266,12 @@ app.get('/', verificarAuth, (req, res) => {
 
                 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
                 <script>
-                    // Extração de dados real de arquivos de texto no navegador
                     document.getElementById('inputArquivo').addEventListener('change', function(e) {
                         const file = e.target.files[0];
                         if (file && (file.type.includes('text') || file.name.endsWith('.txt'))) {
                             const reader = new FileReader();
                             reader.onload = function(event) {
-                                const texto = event.target.result;
-                                const encontrados = texto.match(/(\\+?\\d{10,15}|[\\w\\.-]+@[\\w\\.-]+\\.\\w+|@[\\w_]+)/g);
-                                if (encontrados) {
-                                    document.getElementById('campoTelefones').value = [...new Set(encontrados)].join(', ');
-                                }
+                                document.getElementById('campoTextoBruto').value = event.target.result;
                             };
                             reader.readAsText(file);
                         }
@@ -312,55 +290,146 @@ app.post('/configuracoes', verificarAuth, (req, res) => {
     res.send(`<script>alert('Configurações atualizadas!'); window.location.href='/';</script>`);
 });
 
-// MOTOR DE PROCESSAMENTO E DISPARO REAL COM REDIRECIONAMENTO EFETIVO
-app.post('/disparar-real', verificarAuth, upload.single('arquivo'), (req, res) => {
+// MOTOR DE PARSING INTELIGENTE E FILA MULTI-REDE
+app.post('/iniciar-parser-fila', verificarAuth, upload.single('arquivo'), (req, res) => {
     try {
-        const { rede, telefones, mensagem } = req.body;
-        const arquivoEnviado = req.file ? req.file.filename : null;
+        const { textoBruto, mensagem } = req.body;
         const nomeOriginalArquivo = req.file ? req.file.originalname : null;
 
-        if (!mensagem || !rede || !telefones) {
-            return res.send(`<script>alert('Preencha todos os campos obrigatórios.'); window.location.href='/';</script>`);
+        if (!textoBruto || !mensagem) {
+            return res.send(`<script>alert('Preencha os campos obrigatórios.'); window.location.href='/';</script>`);
         }
 
-        const listaDestinatarios = telefones.split(/[\n,]/).map(t => t.trim()).filter(t => t.length > 2);
-        const horaAtual = new Date().toLocaleTimeString('pt-BR');
+        // --- ALGORITMO DE PARSING AUTOMÁTICO (Separação por Padrão de Rede) ---
+        const itensFila = [];
 
+        // 1. Extração de E-mails -> E-mail Corporativo
+        const regexEmail = /[\w\.-]+@[\w\.-]+\.\w+/g;
+        const emailsEncontrados = [...new Set(textoBruto.match(regexEmail) || [])];
+        emailsEncontrados.forEach(email => {
+            itensFila.push({ rede: 'E-mail Corporativo', destino: email });
+        });
+
+        // 2. Extração de Telefones -> WhatsApp ou Telegram
+        const regexTelefone = /(?:\+?\d{1,3}[\s-]?)?(?:\(?\d{2}\)?[\s-]?)?\d{4,5}[\s-]?\d{4}/g;
+        const telefonesEncontrados = [...new Set(textoBruto.match(regexTelefone) || [])];
+        telefonesEncontrados.forEach(tel => {
+            const limpo = tel.replace(/[^0-9]/g, '');
+            if (limpo.length >= 10) {
+                itensFila.push({ rede: 'WhatsApp', destino: tel });
+            }
+        });
+
+        // 3. Extração de @Perfis e Links -> Instagram / Telegram
+        const regexPerfis = /@[\w_]+/g;
+        const perfisEncontrados = [...new Set(textoBruto.match(regexPerfis) || [])];
+        perfisEncontrados.forEach(perfil => {
+            itensFila.push({ rede: 'Instagram', destino: perfil });
+        });
+
+        if (textoBruto.includes('t.me/') || textoBruto.includes('telegram')) {
+            const regexTg = /t\.me\/[\w_]+/g;
+            const tgs = textoBruto.match(regexTg) || [];
+            tgs.forEach(t => itensFila.push({ rede: 'Telegram', destino: t }));
+        }
+
+        if (itensFila.length === 0) {
+            return res.send(`<script>alert('Nenhum contato válido identificado pelo parser.'); window.location.href='/';</script>`);
+        }
+
+        // Salva todos no SQLite
+        const horaAtual = new Date().toLocaleTimeString('pt-BR');
         const stmt = db.prepare(`INSERT INTO disparos (rede, destino, mensagem, midia, status, hora) VALUES (?, ?, ?, ?, ?, ?)`);
-        for (let destino of listaDestinatarios) {
-            stmt.run([rede, destino, mensagem, nomeOriginalArquivo, 'Enviado com Sucesso', horaAtual]);
+        for (let item of itensFila) {
+            stmt.run([item.rede, item.destino, mensagem, nomeOriginalArquivo, 'Na Fila Multi-Rede', horaAtual]);
         }
         stmt.finalize();
 
-        const primeiroDestino = listaDestinatarios[0].replace(/[^0-9]/g, '');
-
-        if (rede === 'WhatsApp' && primeiroDestino.length >= 10) {
-            const linkWhatsAppReal = `https://wa.me/${primeiroDestino}?text=${encodeURIComponent(mensagem)}`;
-            return res.send(`
-                <!DOCTYPE html>
-                <html lang="pt-BR">
-                <head><meta charset="UTF-8"><title>Envio Real Efetuado</title></head>
-                <body style="background:#f8fafc; color:#1e293b; font-family:sans-serif; text-align:center; padding-top:60px;">
-                    <div style="max-width:450px; margin:0 auto; background:#fff; padding:30px; border-radius:12px; border:1px solid #cbd5e1; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
-                        <h3 style="color:#2563eb;">Disparo Real Registrado!</h3>
-                        <p>Contatos salvos na base de auditoria e prontos para o fluxo efetivo.</p>
-                        <p style="color:#475569; font-size:14px;">Mídia vinculada: <b>${nomeOriginalArquivo || 'Nenhuma'}</b></p>
-                        <a href="${linkWhatsAppReal}" target="_blank" style="background:#2563eb; color:#fff; padding:14px 28px; text-decoration:none; border-radius:8px; font-weight:bold; display:block; margin-top:20px;">Abrir WhatsApp para Disparar Agora</a>
-                        <br>
-                        <a href="/" style="color:#475569; text-decoration:underline; font-size:14px;">Voltar ao Painel</a>
+        // Renderiza o Runner da Fila Multi-Rede Inteligente
+        const filaJson = JSON.stringify(itensFila);
+        res.send(`
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+            <head>
+                <meta charset="UTF-8">
+                <title>Fila Multi-Rede Inteligente - Omni-Social</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+                <style>${cleanStyle}</style>
+            </head>
+            <body class="d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+                <div class="card card-corporate p-4 text-center" style="width: 100%; max-width: 580px;">
+                    <div class="mb-3">
+                        <span class="badge bg-primary px-3 py-2 fs-6">Fila Multi-Rede: <span id="indiceAtual">1</span> de ${itensFila.length}</span>
                     </div>
-                </body>
-                </html>
-            `);
-        }
+                    <div class="mb-2">
+                        <span id="badgeRede" class="badge bg-success px-3 py-1 fs-5">Canal</span>
+                    </div>
+                    <h3 class="text-primary fw-bold mb-4" id="textoDestino">Carregando...</h3>
+                    
+                    <div class="p-3 bg-light rounded text-start mb-4 border">
+                        <small class="text-muted-custom d-block mb-1"><b>Mensagem Configurada:</b></small>
+                        <p class="mb-0 text-dark small" style="white-space: pre-wrap;">${mensagem}</p>
+                        ${nomeOriginalArquivo ? `<hr><small class="text-success"><i class="fa-solid fa-file-arrow-down me-1"></i> Mídia Anexada: <b>${nomeOriginalArquivo}</b></small>` : ''}
+                    </div>
 
-        res.send(`<script>alert('Lote de ${listaDestinatarios.length} contatos processado e salvo com sucesso na auditoria real!'); window.location.href='/';</script>`);
+                    <div class="d-grid gap-2">
+                        <a id="btnDisparar" href="#" target="_blank" class="btn btn-corporate py-3 fw-bold fs-5" onclick="proximoContato()">
+                            <i class="fa-solid fa-paper-plane me-2"></i> Disparar Nesta Rede & Avançar
+                        </a>
+                        <a href="/" class="btn btn-outline-secondary py-2 mt-2">Interromper e Voltar ao Painel</a>
+                    </div>
+                </div>
+
+                <script>
+                    const fila = ${filaJson};
+                    let index = 0;
+                    const mensagemCampanha = ${JSON.stringify(mensagem)};
+
+                    function atualizarTela() {
+                        if (index < fila.length) {
+                            const item = fila[index];
+                            document.getElementById('indiceAtual').innerText = index + 1;
+                            document.getElementById('badgeRede').innerText = item.rede;
+                            document.getElementById('textoDestino').innerText = item.destino;
+                            
+                            let linkHref = "#";
+                            const destinoLimpo = item.destino.replace(/[^0-9]/g, '');
+
+                            if (item.rede === 'WhatsApp' && destinoLimpo.length >= 10) {
+                                linkHref = "https://wa.me/" + destinoLimpo + "?text=" + encodeURIComponent(mensagemCampanha);
+                            } else if (item.rede === 'E-mail Corporativo') {
+                                linkHref = "mailto:" + item.destino + "?subject=" + encodeURIComponent("Campanha Oficial") + "&body=" + encodeURIComponent(mensagemCampanha);
+                            } else if (item.rede === 'Telegram') {
+                                linkHref = "https://t.me/" + item.destino.replace('@','');
+                            } else {
+                                linkHref = "https://instagram.com/" + item.destino.replace('@','');
+                            }
+
+                            document.getElementById('btnDisparar').href = linkHref;
+                        } else {
+                            alert('Fila multi-rede concluída com sucesso!');
+                            window.location.href = '/';
+                        }
+                    }
+
+                    function proximoContato() {
+                        index++;
+                        setTimeout(atualizarTela, 500);
+                    }
+
+                    atualizarTela();
+                </script>
+            </body>
+            </html>
+        `);
+
     } catch (error) {
-        console.error('[ERRO NO DISPARO REAL]', error);
-        res.send(`<script>alert('Erro crítico ao processar o envio real.'); window.location.href='/';</script>`);
+        console.error('[ERRO NO PARSER]', error);
+        res.send(`<script>alert('Erro ao executar parser.'); window.location.href='/';</script>`);
     }
 });
 
 app.listen(PORT, () => {
-    console.log(`[SUCESSO] Omni-Social Real rodando na porta ${PORT}`);
+    console.log(`[SUCESSO] Omni-Social Parser Inteligente rodando na porta ${PORT}`);
 });
