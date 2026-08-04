@@ -1,5 +1,5 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const path = require('path');
@@ -35,23 +35,21 @@ const upload = multer({
 let ADMIN_USER = process.env.ADMIN_USER || 'admin';
 let ADMIN_PASS = process.env.ADMIN_PASS || 'optimatec2026';
 
+// Conexão segura com Better-SQLite3 (Evita crash com status 1)
 const dbPath = path.join(__dirname, 'database.sqlite');
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('[ERRO CRÍTICO] Falha ao conectar ao banco de dados:', err.message);
-    } else {
-        console.log('[SISTEMA] Conectado ao banco de dados SQLite real com sucesso.');
-        db.run(`CREATE TABLE IF NOT EXISTS disparos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            rede TEXT NOT NULL,
-            destino TEXT NOT NULL,
-            mensagem TEXT NOT NULL,
-            midia TEXT,
-            status TEXT NOT NULL,
-            hora TEXT NOT NULL
-        )`);
-    }
-});
+const db = new Database(dbPath);
+
+db.exec(`
+    CREATE TABLE IF NOT EXISTS disparos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        rede TEXT NOT NULL,
+        destino TEXT NOT NULL,
+        mensagem TEXT NOT NULL,
+        midia TEXT,
+        status TEXT NOT NULL,
+        hora TEXT NOT NULL
+    )
+`);
 
 const cleanStyle = `
     :root {
@@ -134,154 +132,153 @@ function verificarAuth(req, res, next) {
 app.get('/', verificarAuth, (req, res) => {
     try {
         const busca = req.query.busca || '';
-        const querySql = busca 
-            ? `SELECT * FROM disparos WHERE destino LIKE ? OR rede LIKE ? ORDER BY id DESC LIMIT 20`
-            : `SELECT * FROM disparos ORDER BY id DESC LIMIT 20`;
-        
-        const params = busca ? [`%${busca}%`, `%${busca}%`] : [];
+        let rows = [];
 
-        db.all(querySql, params, (err, rows) => {
-            if (err) rows = [];
+        if (busca) {
+            const stmt = db.prepare(`SELECT * FROM disparos WHERE destino LIKE ? OR rede LIKE ? ORDER BY id DESC LIMIT 20`);
+            rows = stmt.all(`%${busca}%`, `%${busca}%`);
+        } else {
+            rows = db.prepare(`SELECT * FROM disparos ORDER BY id DESC LIMIT 20`).all();
+        }
 
-            const historicoHtml = rows.length === 0 
-                ? '<tr><td colspan="5" class="text-muted-custom text-center py-4">Nenhum envio real registrado.</td></tr>' 
-                : rows.map(l => `
-                    <tr>
-                        <td class="fw-bold text-primary">${l.rede}</td>
-                        <td class="text-truncate" style="max-width: 150px;" title="${l.destino}">${l.destino}</td>
-                        <td>${l.midia ? `<a href="/uploads/${l.midia}" target="_blank" class="badge bg-success text-decoration-none px-2 py-1"><i class="fa-solid fa-file-arrow-down me-1"></i> ${l.midia}</a>` : '<span class="text-muted-custom">Sem Mídia</span>'}</td>
-                        <td><span class="badge bg-primary px-2 py-1">${l.status}</span></td>
-                        <td class="text-muted-custom small">${l.hora}</td>
-                    </tr>
-                `).join('');
+        const historicoHtml = rows.length === 0 
+            ? '<tr><td colspan="5" class="text-muted-custom text-center py-4">Nenhum envio real registrado.</td></tr>' 
+            : rows.map(l => `
+                <tr>
+                    <td class="fw-bold text-primary">${l.rede}</td>
+                    <td class="text-truncate" style="max-width: 150px;" title="${l.destino}">${l.destino}</td>
+                    <td>${l.midia ? `<a href="/uploads/${l.midia}" target="_blank" class="badge bg-success text-decoration-none px-2 py-1"><i class="fa-solid fa-file-arrow-down me-1"></i> ${l.midia}</a>` : '<span class="text-muted-custom">Sem Mídia</span>'}</td>
+                    <td><span class="badge bg-primary px-2 py-1">${l.status}</span></td>
+                    <td class="text-muted-custom small">${l.hora}</td>
+                </tr>
+            `).join('');
 
-            res.send(`
-                <!DOCTYPE html>
-                <html lang="pt-BR">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Omni-Social - Painel Estável</title>
-                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-                    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-                    <style>${cleanStyle}</style>
-                </head>
-                <body>
-                    <nav class="navbar navbar-corporate px-4 py-3 mb-4">
-                        <div class="container-fluid">
-                            <span class="navbar-brand mb-0 h1 fw-bold text-dark d-flex align-items-center">
-                                <i class="fa-solid fa-shield-halved text-primary me-2 fs-4"></i> OMNI-SOCIAL <span class="text-muted-custom fs-6 fw-normal ms-2">| Cloud Stable</span>
-                            </span>
-                            <div class="d-flex align-items-center">
-                                <button class="btn btn-outline-secondary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#modalConfig"><i class="fa-solid fa-gear me-1"></i> Configurações</button>
-                                <a href="/login" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-arrow-right-from-bracket me-1"></i> Sair</a>
+        res.send(`
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Omni-Social - Painel Estável</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+                <style>${cleanStyle}</style>
+            </head>
+            <body>
+                <nav class="navbar navbar-corporate px-4 py-3 mb-4">
+                    <div class="container-fluid">
+                        <span class="navbar-brand mb-0 h1 fw-bold text-dark d-flex align-items-center">
+                            <i class="fa-solid fa-shield-halved text-primary me-2 fs-4"></i> OMNI-SOCIAL <span class="text-muted-custom fs-6 fw-normal ms-2">| Cloud Stable</span>
+                        </span>
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-outline-secondary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#modalConfig"><i class="fa-solid fa-gear me-1"></i> Configurações</button>
+                            <a href="/login" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-arrow-right-from-bracket me-1"></i> Sair</a>
+                        </div>
+                    </div>
+                </nav>
+
+                <div class="container pb-5">
+                    <div class="row g-4">
+                        <div class="col-lg-5">
+                            <div class="card card-corporate p-4 h-100">
+                                <h5 class="fw-bold mb-3"><i class="fa-solid fa-wand-magic-sparkles text-primary me-2"></i> Parser & Fila Contínua</h5>
+                                <p class="text-muted-custom small">Cole os dados brutos ou anexe um arquivo `.txt`. O parser processará os contatos de forma segura e gerará a fila sem risco de falhas.</p>
+                                
+                                <form id="formDisparo" action="/iniciar-parser-fila" method="POST" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label class="form-label">Bloco de Dados Brutos</label>
+                                        <textarea class="form-control" name="textoBruto" id="campoTextoBruto" rows="5" placeholder="Cole aqui os dados bagunçados..." required></textarea>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Mensagem Padrão da Campanha</label>
+                                        <textarea class="form-control" name="mensagem" rows="3" placeholder="Digite a mensagem..." required></textarea>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label">Anexar Arquivo `.txt` (Opcional)</label>
+                                        <input type="file" class="form-control" name="arquivo" id="inputArquivo">
+                                    </div>
+
+                                    <button type="submit" class="btn btn-corporate w-100 py-3">
+                                        <i class="fa-solid fa-network-wired me-2"></i> Executar Parser com Segurança
+                                    </button>
+                                </form>
                             </div>
                         </div>
-                    </nav>
 
-                    <div class="container pb-5">
-                        <div class="row g-4">
-                            <div class="col-lg-5">
-                                <div class="card card-corporate p-4 h-100">
-                                    <h5 class="fw-bold mb-3"><i class="fa-solid fa-wand-magic-sparkles text-primary me-2"></i> Parser & Fila Contínua</h5>
-                                    <p class="text-muted-custom small">Cole os dados brutos ou anexe um arquivo `.txt`. O parser processará os contatos de forma segura e gerará a fila sem risco de falhas.</p>
-                                    
-                                    <form id="formDisparo" action="/iniciar-parser-fila" method="POST" enctype="multipart/form-data">
-                                        <div class="mb-3">
-                                            <label class="form-label">Bloco de Dados Brutos</label>
-                                            <textarea class="form-control" name="textoBruto" id="campoTextoBruto" rows="5" placeholder="Cole aqui os dados bagunçados..." required></textarea>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label">Mensagem Padrão da Campanha</label>
-                                            <textarea class="form-control" name="mensagem" rows="3" placeholder="Digite a mensagem..." required></textarea>
-                                        </div>
-
-                                        <div class="mb-4">
-                                            <label class="form-label">Anexar Arquivo `.txt` (Opcional)</label>
-                                            <input type="file" class="form-control" name="arquivo" id="inputArquivo">
-                                        </div>
-
-                                        <button type="submit" class="btn btn-corporate w-100 py-3">
-                                            <i class="fa-solid fa-network-wired me-2"></i> Executar Parser com Segurança
-                                        </button>
+                        <div class="col-lg-7">
+                            <div class="card card-corporate p-4 h-100">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="fw-bold m-0"><i class="fa-solid fa-database text-primary me-2"></i> Auditoria de Envios</h5>
+                                    <form method="GET" action="/" class="d-flex gap-2">
+                                        <input type="text" class="form-control form-control-sm" name="busca" value="${busca}" placeholder="Filtrar...">
+                                        <button class="btn btn-outline-primary btn-sm" type="submit"><i class="fa-solid fa-search"></i></button>
                                     </form>
                                 </div>
-                            </div>
 
-                            <div class="col-lg-7">
-                                <div class="card card-corporate p-4 h-100">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h5 class="fw-bold m-0"><i class="fa-solid fa-database text-primary me-2"></i> Auditoria de Envios</h5>
-                                        <form method="GET" action="/" class="d-flex gap-2">
-                                            <input type="text" class="form-control form-control-sm" name="busca" value="${busca}" placeholder="Filtrar...">
-                                            <button class="btn btn-outline-primary btn-sm" type="submit"><i class="fa-solid fa-search"></i></button>
-                                        </form>
-                                    </div>
-
-                                    <div class="table-responsive">
-                                        <table class="table table-custom table-hover align-middle small rounded overflow-hidden">
-                                            <thead>
-                                                <tr>
-                                                    <th>Rede</th>
-                                                    <th>Destino</th>
-                                                    <th>Mídia Vinculada</th>
-                                                    <th>Status</th>
-                                                    <th>Horário</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                ${historicoHtml}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                <div class="table-responsive">
+                                    <table class="table table-custom table-hover align-middle small rounded overflow-hidden">
+                                        <thead>
+                                            <tr>
+                                                <th>Rede</th>
+                                                <th>Destino</th>
+                                                <th>Mídia Vinculada</th>
+                                                <th>Status</th>
+                                                <th>Horário</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${historicoHtml}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- MODAL CONFIG -->
-                    <div class="modal fade" id="modalConfig" tabindex="-1">
-                        <div class="modal-dialog">
-                            <div class="modal-content card-corporate">
-                                <div class="modal-header border-bottom">
-                                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-sliders me-2 text-primary"></i> Configurações</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <form action="/configuracoes" method="POST">
-                                        <div class="mb-3">
-                                            <label class="form-label">Usuário</label>
-                                            <input type="text" class="form-control" name="novoUser" value="${ADMIN_USER}" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Nova Senha</label>
-                                            <input type="password" class="form-control" name="novaSenha" placeholder="Digite para alterar">
-                                        </div>
-                                        <button type="submit" class="btn btn-corporate w-100 py-2 mt-2">Salvar</button>
-                                    </form>
-                                </div>
+                <!-- MODAL CONFIG -->
+                <div class="modal fade" id="modalConfig" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content card-corporate">
+                            <div class="modal-header border-bottom">
+                                <h5 class="modal-title fw-bold"><i class="fa-solid fa-sliders me-2 text-primary"></i> Configurações</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="/configuracoes" method="POST">
+                                    <div class="mb-3">
+                                        <label class="form-label">Usuário</label>
+                                        <input type="text" class="form-control" name="novoUser" value="${ADMIN_USER}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Nova Senha</label>
+                                        <input type="password" class="form-control" name="novaSenha" placeholder="Digite para alterar">
+                                    </div>
+                                    <button type="submit" class="btn btn-corporate w-100 py-2 mt-2">Salvar</button>
+                                </form>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-                    <script>
-                        document.getElementById('inputArquivo').addEventListener('change', function(e) {
-                            const file = e.target.files[0];
-                            if (file && (file.type.includes('text') || file.name.endsWith('.txt'))) {
-                                const reader = new FileReader();
-                                reader.onload = function(event) {
-                                    document.getElementById('campoTextoBruto').value = event.target.result;
-                                };
-                                reader.readAsText(file);
-                            }
-                        });
-                    </script>
-                </body>
-                </html>
-            `);
-        });
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+                <script>
+                    document.getElementById('inputArquivo').addEventListener('change', function(e) {
+                        const file = e.target.files[0];
+                        if (file && (file.type.includes('text') || file.name.endsWith('.txt'))) {
+                            const reader = new FileReader();
+                            reader.onload = function(event) {
+                                document.getElementById('campoTextoBruto').value = event.target.result;
+                            };
+                            reader.readAsText(file);
+                        }
+                    });
+                </script>
+            </body>
+            </html>
+        `);
     } catch (e) {
         console.error('[ERRO ROTA RAIZ]', e);
         res.status(500).send('Erro interno no servidor.');
@@ -295,14 +292,12 @@ app.post('/configuracoes', verificarAuth, (req, res) => {
     res.send(`<script>alert('Configurações atualizadas!'); window.location.href='/';</script>`);
 });
 
-// MOTOR DE PARSER SEGURO CONTRA CRASHES
 app.post('/iniciar-parser-fila', verificarAuth, upload.single('arquivo'), (req, res) => {
     try {
         let textoBruto = req.body.textoBruto || '';
         const mensagem = req.body.mensagem || '';
         const nomeOriginalArquivo = req.file ? req.file.originalname : null;
 
-        // Se houver arquivo anexado e o campo de texto estiver vazio, lê o arquivo
         if (req.file && !textoBruto.trim()) {
             try {
                 const filePath = path.join(uploadDir, req.file.filename);
@@ -320,14 +315,12 @@ app.post('/iniciar-parser-fila', verificarAuth, upload.single('arquivo'), (req, 
 
         const itensFila = [];
 
-        // 1. E-mails
         const regexEmail = /[\w\.-]+@[\w\.-]+\.\w+/g;
         const emailsEncontrados = [...new Set(textoBruto.match(regexEmail) || [])];
         emailsEncontrados.forEach(email => {
             itensFila.push({ rede: 'E-mail Corporativo', destino: email });
         });
 
-        // 2. Telefones
         const regexTelefone = /(?:\+?\d{1,3}[\s-]?)?(?:\(?\d{2}\)?[\s-]?)?\d{4,5}[\s-]?\d{4}/g;
         const telefonesEncontrados = [...new Set(textoBruto.match(regexTelefone) || [])];
         telefonesEncontrados.forEach(tel => {
@@ -337,7 +330,6 @@ app.post('/iniciar-parser-fila', verificarAuth, upload.single('arquivo'), (req, 
             }
         });
 
-        // 3. Perfis e Links
         const regexPerfis = /@[\w_]+/g;
         const perfisEncontrados = [...new Set(textoBruto.match(regexPerfis) || [])];
         perfisEncontrados.forEach(perfil => {
@@ -355,11 +347,14 @@ app.post('/iniciar-parser-fila', verificarAuth, upload.single('arquivo'), (req, 
         }
 
         const horaAtual = new Date().toLocaleTimeString('pt-BR');
-        const stmt = db.prepare(`INSERT INTO disparos (rede, destino, mensagem, midia, status, hora) VALUES (?, ?, ?, ?, ?, ?)`);
-        for (let item of itensFila) {
-            stmt.run([item.rede, item.destino, mensagem, nomeOriginalArquivo, 'Na Fila Multi-Rede', horaAtual]);
-        }
-        stmt.finalize();
+        const insertStmt = db.prepare(`INSERT INTO disparos (rede, destino, mensagem, midia, status, hora) VALUES (?, ?, ?, ?, ?, ?)`);
+        
+        const insertMany = db.transaction((items) => {
+            for (let item of items) {
+                insertStmt.run(item.rede, item.destino, mensagem, nomeOriginalArquivo, 'Na Fila Multi-Rede', horaAtual);
+            }
+        });
+        insertMany(itensFila);
 
         const filaJson = JSON.stringify(itensFila);
         res.send(`
