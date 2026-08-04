@@ -35,7 +35,6 @@ const upload = multer({
 let ADMIN_USER = process.env.ADMIN_USER || 'admin';
 let ADMIN_PASS = process.env.ADMIN_PASS || 'optimatec2026';
 
-// Conexão segura com Better-SQLite3 (Evita crash com status 1)
 const dbPath = path.join(__dirname, 'database.sqlite');
 const db = new Database(dbPath);
 
